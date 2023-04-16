@@ -8,11 +8,11 @@ library(tidyr)
 rm(list=ls())
 
 # Read in the dataset
-avocado_data <- read.csv("avocado.csv", header = TRUE)
+avocado <- read.csv("avocado.csv", header = TRUE)
 
 
 # Create separate histograms for each type
-ggplot(avocado_data, aes(x = AveragePrice, fill = type)) +
+ggplot(avocado, aes(x = AveragePrice, fill = type)) +
   geom_histogram(bins = 30, alpha = 0.8, position = 'identity', color = "black") +
   facet_wrap(~ type) +
   labs(title = "Histogram of Average Price by Type",
@@ -30,20 +30,20 @@ ggplot(avocado_data, aes(x = AveragePrice, fill = type)) +
 
 
 # Calculate the mean price for each type using the aggregate function
-mean_price_by_type <- aggregate(AveragePrice ~ type, data = avocado_data, FUN = mean)
+mean_price_by_type <- aggregate(AveragePrice ~ type, data = avocado, FUN = mean)
 
 # Print the mean price by type
 print(mean_price_by_type)
 
 # Get a summary of the average price for each type
-summary_by_type <- by(avocado_data$AveragePrice, avocado_data$type, summary)
+summary_by_type <- by(avocado$AveragePrice, avocado$type, summary)
 
 # Print the summary information
 print(summary_by_type)
 
 
 # Box plot of avocado prices by type
-ggplot(avocado_data, aes(x = type, y = AveragePrice)) +
+ggplot(avocado, aes(x = type, y = AveragePrice)) +
   geom_boxplot(fill = "blue", alpha = 0.5) +
   ggtitle("Average Avocado Prices by Type")
 
@@ -52,10 +52,10 @@ ggplot(avocado_data, aes(x = type, y = AveragePrice)) +
 
 
 # Extract the month from the date column
-avocado_data$month <- month(ymd(avocado_data$Date))
+avocado$month <- month(ymd(avocado$Date))
 
 # Summarize the average price for each month and type
-monthly_summary <- avocado_data %>%
+monthly_summary <- avocado %>%
   group_by(type, month) %>%
   summarise(avg_price = mean(AveragePrice, na.rm = TRUE)) %>%
   arrange(type, month)
@@ -102,11 +102,11 @@ ggplot(monthly_summary_long, aes(x = month, y = type, fill = avg_price, label = 
 
 
 # Filter data by type
-conventional_data <- avocado_data %>% filter(type == "conventional")
-organic_data <- avocado_data %>% filter(type == "organic")
+conventional_data <- avocado %>% filter(type == "conventional")
+organic_data <- avocado %>% filter(type == "organic")
 
 
-ggplot(avocado_data, aes(x = reorder(region, AveragePrice, median), y = AveragePrice, fill = type)) +
+ggplot(avocado, aes(x = reorder(region, AveragePrice, median), y = AveragePrice, fill = type)) +
   geom_boxplot(show.legend = TRUE) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
