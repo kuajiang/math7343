@@ -4,14 +4,14 @@ library(ggtext)
 library(lubridate)
 library(tidyr)
 
-
 rm(list=ls())
 
-# Read in the dataset
+# 0: read in the dataset
 avocado <- read.csv("avocado.csv", header = TRUE)
 
+# 1: Average price based on type: Conventional vs. Organic
 
-# Create separate histograms for each type
+# 1.1 draw histograms for each type
 ggplot(avocado, aes(x = AveragePrice, fill = type)) +
   geom_histogram(bins = 30, alpha = 0.8, position = 'identity', color = "black") +
   facet_wrap(~ type) +
@@ -29,41 +29,37 @@ ggplot(avocado, aes(x = AveragePrice, fill = type)) +
   scale_fill_manual(values = c("Conventional" = "#56B4E9", "Organic" = "#D55E00"))
 
 
-# Calculate the mean price for each type using the aggregate function
+# 1.2 mean price for each type
 mean_price_by_type <- aggregate(AveragePrice ~ type, data = avocado, FUN = mean)
 
-# Print the mean price by type
 print(mean_price_by_type)
 
-# Get a summary of the average price for each type
 summary_by_type <- by(avocado$AveragePrice, avocado$type, summary)
 
-# Print the summary information
 print(summary_by_type)
 
 
-# Box plot of avocado prices by type
+# 1.3 box plot
 ggplot(avocado, aes(x = type, y = AveragePrice)) +
   geom_boxplot(fill = "blue", alpha = 0.5) +
   ggtitle("Average Avocado Prices by Type")
 
 
 
+# 2: check seasonal fluctuations
 
-
-# Extract the month from the date column
+# 2.1 Extract the month from the date column
 avocado$month <- month(ymd(avocado$Date))
 
-# Summarize the average price for each month and type
+# 2.2 Summarize the average price for each month and type
 monthly_summary <- avocado %>%
   group_by(type, month) %>%
   summarise(avg_price = mean(AveragePrice, na.rm = TRUE)) %>%
   arrange(type, month)
 
-# Print the summarized information
 print(monthly_summary)
 
-# Create a line graph
+# 2.3 Create a line graph for monthly price
 ggplot(monthly_summary, aes(x = month, y = avg_price, group = type, color = type)) +
   geom_line() +
   geom_point() +
@@ -76,19 +72,15 @@ ggplot(monthly_summary, aes(x = month, y = avg_price, group = type, color = type
 
 
 
-# Pivot the data frame wider
+# 2.4 Draw monthly price table
 monthly_summary_table <- monthly_summary %>%
   pivot_wider(names_from = month, values_from = avg_price)
 
-
-
-# Convert the table to a long format
 monthly_summary_long <- monthly_summary_table %>%
   mutate(type = as.factor(type)) %>%
   pivot_longer(-type, names_to = "month", values_to = "avg_price") %>%
   mutate(month = as.numeric(month))
 
-# Create a table visualization
 ggplot(monthly_summary_long, aes(x = month, y = type, fill = avg_price, label = round(avg_price, 2))) +
   geom_tile(color = "white") +
   geom_text(color = "white", size = 4) +
@@ -100,12 +92,13 @@ ggplot(monthly_summary_long, aes(x = month, y = type, fill = avg_price, label = 
         axis.title = element_text(size = 12),
         plot.title = element_text(size = 14, hjust = 0.5))
 
+# 3: check geographical variations
 
-# Filter data by type
+# 3.1 Average Price by Region, conventional and organic
 conventional_data <- avocado %>% filter(type == "conventional")
 organic_data <- avocado %>% filter(type == "organic")
 
-
+# 3.2 Plot, order cities by price from high to low
 ggplot(avocado, aes(x = reorder(region, AveragePrice, median), y = AveragePrice, fill = type)) +
   geom_boxplot(show.legend = TRUE) +
   theme_bw() +
